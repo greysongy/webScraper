@@ -22,11 +22,16 @@ app.set("view engine", "handlebars");
 
 app.get("/", function(req, res) {
     // res.send('Main page');
-     res.render("home");
+     db.Equipment.find({})
+     .then(function(dbEquipment) {
+         res.render("home", {
+             equipment: dbEquipment
+         })
+     })
 })
 
 //need mongoose connect line
-mongoose.connect("mongodb://localhost/test", {useNewUrlParser: true});
+mongoose.connect("mongodb://localhost/newTest", {useNewUrlParser: true});
 
 app.get("/scrape", function(req, res) {
 
@@ -35,7 +40,9 @@ app.get("/scrape", function(req, res) {
         var $ = cheerio.load(response.data);
 
         $("a.woocommerce-LoopProduct-link").each(function(i, element) {
-            // console.log("element");
+            console.log("element", element);
+            var link = element.attribs.href;
+            console.log("Link", link)
             var values = $(element).children('p');
             console.log("Values");
             console.log(values.length);
@@ -46,7 +53,8 @@ app.get("/scrape", function(req, res) {
             db.Equipment.create({
                 name: values[0].children[0].data, 
                 id: values[1].children[0].data, 
-                price: values[2].children[0].data
+                price: values[2].children[0].data, 
+                link: link
             })
             .then(function(newEquipment) {
                 console.log(newEquipment);
