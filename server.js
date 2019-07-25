@@ -70,6 +70,43 @@ app.get("/scrape", function(req, res) {
 
 });
 
+app.get("/scrapeBES", function(req, res) {
+
+    axios.get('').then(function(response) {
+
+        var $ = cheerio.load(response.data);
+
+        $("a.woocommerce-LoopProduct-link").each(function(i, element) {
+            console.log("element", element);
+            var link = element.attribs.href;
+            console.log("Link", link)
+            var values = $(element).children('p');
+            console.log("Values");
+            console.log(values.length);
+            // for(var i = 0; i < values.length; i++) {
+            //     // console.log(values[i]);
+            //     console.log(values[i].children[0].data);
+            // }
+            db.Equipment.create({
+                name: values[0].children[0].data, 
+                id: values[1].children[0].data, 
+                price: values[2].children[0].data, 
+                link: link
+            })
+            .then(function(newEquipment) {
+                console.log(newEquipment);
+            })
+            .catch(function(err) {
+                console.log(err)
+            });
+        });
+
+        res.send("Scrape Complete");
+
+    });
+
+});
+
 app.listen(PORT, function() {
     console.log("App running on port " + PORT + "!");
   });
